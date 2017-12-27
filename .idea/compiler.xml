@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="core_common" />
+        <module name="core_orm" />
+        <module name="core_web" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="core_common" target="1.7" />
+      <module name="core_example" target="1.7" />
+      <module name="core_orm" target="1.7" />
+      <module name="core_web" target="1.5" />
+      <module name="yt" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
