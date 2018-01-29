@@ -14,13 +14,23 @@ public class CommonPageService<T> implements PageConvert<T> {
 
     @Override
     public void convert(QueryHandler queryHandler, HttpServletRequest request) {
-        String length = request.getParameter("length");
-        if(StringUtils.isNotEmpty(length)){
-            queryHandler.setRows(Integer.valueOf(length));
+//        String length = request.getParameter("length");
+//        if(StringUtils.isNotEmpty(length)){
+//            queryHandler.setRows(Integer.valueOf(length));
+//        }
+//        String start = request.getParameter("start");
+//        if(StringUtils.isNotEmpty(start)){
+//            queryHandler.setPage(Integer.valueOf(start)/ queryHandler.getRows()+1);
+//        }
+
+        String pageSize = request.getParameter("pageSize");
+        if(StringUtils.isNotEmpty(pageSize)){
+            queryHandler.setRows(Integer.valueOf(pageSize));
         }
-        String start = request.getParameter("start");
-        if(StringUtils.isNotEmpty(start)){
-            queryHandler.setPage(Integer.valueOf(start)/ queryHandler.getRows()+1);
+
+        String currentPage = request.getParameter("currentPage");
+        if(StringUtils.isNotEmpty(currentPage)){
+            queryHandler.setPage(Integer.valueOf(currentPage));
         }
     }
 }

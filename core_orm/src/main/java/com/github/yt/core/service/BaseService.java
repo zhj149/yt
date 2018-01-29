@@ -22,6 +22,14 @@ public interface BaseService<T> {
     void save(T entity) ;
 
     /**
+     * 批量保存
+     *
+     * @param entities 待保存实体列表
+     *
+     */
+    void saveBatch(List<T> entities) ;
+
+    /**
      * 只保存非空字段
      *
      * @param entity 待保存的实体
@@ -53,6 +61,15 @@ public interface BaseService<T> {
      *
      */
     void delete(Class<T> clazz, Serializable id) ;
+
+    /**
+     * 逻辑删除实体
+     *
+     * @param clazz clazz
+     * @param id 业务实体ID
+     *
+     */
+    void logicDelete(Class<T> clazz, Serializable id);
 
     /**
      * 根据ID获取实体

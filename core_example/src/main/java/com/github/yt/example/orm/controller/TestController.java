@@ -24,16 +24,16 @@ public class TestController extends BaseController {
     @ApiOperation(value="测试add")
     @RequestMapping(method = RequestMethod.POST)
     public HttpResultEntity<?> add() throws Exception {
-        testService.save(new MemberT().setName("测试name1"));
+        testService.save(new MemberT().setUserName("测试name1"));
         return HttpResultHandler.getSuccessResult();
     }
 
     @ApiOperation(value="测试update")
     @RequestMapping(method = RequestMethod.PUT)
     public HttpResultEntity<?> update() throws Exception {
-        MemberT member=new MemberT().setName("测试name2");
+        MemberT member=new MemberT().setUserName("测试name2");
         testService.save(member);
-        member.setName("修改名称");
+        member.setUserName("修改名称");
         testService.update(member);
         return HttpResultHandler.getSuccessResult();
     }
@@ -41,7 +41,7 @@ public class TestController extends BaseController {
     @ApiOperation(value="测试delete")
     @RequestMapping(method = RequestMethod.DELETE)
     public HttpResultEntity<?> delete() throws Exception {
-        MemberT member=new MemberT().setName("测试name3");
+        MemberT member=new MemberT().setUserName("测试name3");
         testService.save(member);
         testService.delete(MemberT.class,member.getMemberId());
         return HttpResultHandler.getSuccessResult();
@@ -50,7 +50,7 @@ public class TestController extends BaseController {
     @ApiOperation(value="测试通过id查询")
     @RequestMapping(value = "/find", method = RequestMethod.GET)
     public HttpResultEntity<?> find() throws Exception {
-        MemberT member=new MemberT().setName("测试name4");
+        MemberT member=new MemberT().setUserName("测试name4");
         testService.save(member);
         return HttpResultHandler.getSuccessResult(testService.find(MemberT.class,member.getMemberId()));
     }

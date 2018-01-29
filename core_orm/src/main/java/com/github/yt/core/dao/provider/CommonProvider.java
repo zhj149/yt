@@ -4,6 +4,8 @@ import com.github.yt.common.exception.BaseErrorException;
 import com.github.yt.common.utils.JPAUtils;
 import com.github.yt.core.dao.BaseMapper;
 import com.github.yt.core.dao.MapperProvider;
+import com.github.yt.core.domain.BaseEntity;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.Column;
@@ -13,7 +15,9 @@ import javax.persistence.Transient;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.github.yt.core.mybatis.SqlBuilder.*;
 
@@ -44,6 +48,47 @@ public class CommonProvider extends MapperProvider {
         return sql();
     }
 
+
+    /**
+     * 保存sql
+     *
+     * @param param 参数
+     * @return sql
+     * @{@inheritDoc}
+     */
+    public String saveBatch(Map<String, Object> param) {
+        if (null == param.get(BaseMapper.ENTITIES)) {
+            throw new BaseErrorException("批量插入的数据为null");
+        }
+        Class<?> entityClass = ((List) param.get(BaseMapper.ENTITIES)).get(0).getClass();
+        begin();
+        BATCH_INSERT_INTO(getTableName(entityClass));
+        Field idField = null;
+        for (int i = 0; i < ((List) param.get(BaseMapper.ENTITIES)).size(); i++) {
+            for (Field field : JPAUtils.getAllFields(entityClass)) {
+//                if (!ClassUtils.isPrimitiveOrWrapper(field.getClass())) {
+//                    continue;
+//                }
+                field.setAccessible(true);
+                if (null != field.getAnnotation(Id.class) || null != field.getAnnotation(Transient.class)) {
+                    idField = field;
+                    continue;
+                }
+                Object value = JPAUtils.getValue(((List) param.get(BaseMapper.ENTITIES)).get(i), field.getName());
+                if (null == value) {
+                    continue;
+                }
+                BATCH_VALUES(field.getName(), StringUtils.join("#{", BaseMapper.ENTITIES, "[", i, "]", ".", field.getName(), "}"));
+            }
+            if (null == idField) {
+                throw new BaseErrorException(StringUtils.join(entityClass.getName(), "实体未配置@Id "));
+            }
+            setIdBatch((BaseEntity) ((List) param.get(BaseMapper.ENTITIES)).get(i), i, idField);
+            BATCH_SEGMENTATION();
+        }
+        return sql();
+    }
+
     public String saveForSelective(Map<String, Object> param) {
         Class<?> entityClass = param.get(BaseMapper.ENTITY).getClass();
         begin();
@@ -71,7 +116,7 @@ public class CommonProvider extends MapperProvider {
     }
 
     public String update(Map<String, Object> param) {
-        Class<?>  entityClass = param.get(BaseMapper.ENTITY).getClass();
+        Class<?> entityClass = param.get(BaseMapper.ENTITY).getClass();
         begin();
         UPDATE(getTableName(entityClass));
         Field idField = null;
@@ -128,10 +173,22 @@ public class CommonProvider extends MapperProvider {
     public String delete(Map<String, Object> param) {
         begin();
         Class<?> entityClass = (Class) param.get(BaseMapper.ENTITY_CLASS);
-        if(param.get(BaseMapper.ID)==null|| StringUtils.isEmpty(param.get(BaseMapper.ID).toString())){
+        if (param.get(BaseMapper.ID) == null || StringUtils.isEmpty(param.get(BaseMapper.ID).toString())) {
             throw new BaseErrorException(StringUtils.join(entityClass.getName(), ",删除时主键不能为空!"));
         }
         DELETE_FROM(getTableName(entityClass));
+        WHERE(getEqualsValue(JPAUtils.getIdField(entityClass).getName(), BaseMapper.ID));
+        return sql();
+    }
+
+    public String logicDelete(Map<String, Object> param) {
+        begin();
+        Class<?> entityClass = (Class) param.get(BaseMapper.ENTITY_CLASS);
+        if (param.get(BaseMapper.ID) == null || StringUtils.isEmpty(param.get(BaseMapper.ID).toString())) {
+            throw new BaseErrorException(StringUtils.join(entityClass.getName(), ",删除时主键不能为空!"));
+        }
+        UPDATE(getTableName(entityClass));
+        SET(BaseEntity.DELETE_FLAG + "=1");
         WHERE(getEqualsValue(JPAUtils.getIdField(entityClass).getName(), BaseMapper.ID));
         return sql();
     }

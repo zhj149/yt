@@ -7,6 +7,7 @@ import com.github.yt.core.domain.BaseEntity;
 import com.github.yt.core.handler.QueryHandler;
 import com.github.yt.core.result.QueryResult;
 import com.github.yt.core.service.BaseService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,20 @@ public abstract class ServiceSupport<T, M extends BaseMapper<T>> implements Base
     public void save(T entity) {
         this.processCreateColumns(entity);
         getMapper().save(entity);
+    }
+
+    @Override
+    public void saveBatch(List<T> entities) {
+        boolean isHisEntity = false;
+        if (CollectionUtils.isEmpty(entities)) {
+            return;
+        }
+        if (BaseEntity.class.isAssignableFrom(entities.get(0).getClass())) {
+            for (T entity : entities) {
+                this.processCreateColumns(entity);
+            }
+        }
+        getMapper().saveBatch(entities);
     }
 
     @Override
@@ -58,6 +73,11 @@ public abstract class ServiceSupport<T, M extends BaseMapper<T>> implements Base
     @Override
     public void delete(Class<T> clazz, Serializable id) {
         getMapper().delete(clazz , id);
+    }
+
+    @Override
+    public void logicDelete(Class<T> clazz, Serializable id) {
+        getMapper().logicDelete(clazz , id);
     }
 
     @Override

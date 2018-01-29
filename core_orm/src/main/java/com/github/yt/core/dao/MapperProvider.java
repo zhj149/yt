@@ -2,6 +2,7 @@ package com.github.yt.core.dao;
 
 import com.github.yt.common.exception.BaseErrorException;
 import com.github.yt.common.utils.JPAUtils;
+import com.github.yt.core.domain.BaseEntity;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -9,6 +10,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -73,25 +75,43 @@ public class MapperProvider {
         return StringUtils.join(column, " = #{", value, "}");
     }
 
-    protected void createAllWhere(Class<?> entityClass,Map<String, Object> param, boolean usePage) {
+    protected void createAllWhere(Class<?> entityClass, Map<String, Object> param, boolean usePage, boolean isCount) {
         if (MapUtils.isEmpty(param)) {
             return;
         }
         try {
-            createFieldsWhereSql(entityClass,param);
-            parseQueryHandle(param, usePage);
+            createFieldsWhereSql(entityClass, param);
+            parseQueryHandle(param, usePage, isCount);
         } catch (Exception e) {
             throw new BaseErrorException(e);
         }
     }
 
-    private void createFieldsWhereSql(Class clazz,Map<String, Object> param) {
-        for (Field field : JPAUtils.getAllFields(clazz)) {
-            createFieldWhereSql(field,param);
+    protected void setIdBatch(BaseEntity baseEntity, int i, Field idField) {
+        if (!idField.getType().isAssignableFrom(String.class)) {
+            return;
+        }
+        try {
+            if (StringUtils.isNotEmpty((String) idField.get(baseEntity))) {
+                BATCH_VALUES(idField.getName(), StringUtils.join("#{", BaseMapper.ENTITIES, "[", i, "]", ".", idField.getName(), "}"));
+                return;
+            }
+
+            String id = UUID.randomUUID().toString().replace("-", "");
+            BATCH_VALUES(idField.getName(), StringUtils.join("'", id, "'"));
+            idField.set(baseEntity, id);
+        } catch (IllegalAccessException e) {
+            throw new BaseErrorException(e);
         }
     }
 
-    private boolean createFieldWhereSql(Field field,Map<String, Object> param) {
+    private void createFieldsWhereSql(Class clazz, Map<String, Object> param) {
+        for (Field field : JPAUtils.getAllFields(clazz)) {
+            createFieldWhereSql(field, param);
+        }
+    }
+
+    private boolean createFieldWhereSql(Field field, Map<String, Object> param) {
         if (!validateFieldWhereSql(field, param)) {
             return false;
         }
@@ -110,7 +130,17 @@ public class MapperProvider {
         return param.containsKey(field.getName());
     }
 
-    private void parseQueryHandle(Map<String, Object> param, Boolean usePage) {
+    private void parseQueryHandle(Map<String, Object> param, Boolean usePage, boolean isCount) {
+        if (param.containsKey("orderBy") && !isCount) {
+            LinkedHashMap<String, String> orderByMap = (LinkedHashMap<String, String>) param.get("orderBy");
+            for (String orderBy : orderByMap.keySet()) {
+                if (orderBy.contains(".")) {
+                    ORDER_BY(orderBy + " " + orderByMap.get(orderBy));
+                    continue;
+                }
+                ORDER_BY(StringUtils.join("t.", orderBy, " ", orderByMap.get(orderBy)));
+            }
+        }
         if (param.containsKey("whereSqls")) {
             List<String> whereSqlList = (List<String>) param.get("whereSqls");
             for (String whereSql : whereSqlList) {

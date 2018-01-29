@@ -17,7 +17,7 @@ public class SearchProvider extends MapperProvider {
     public String findById(Map<String, Object> param) {
         begin();
         Class<?> entityClass = (Class) param.get(BaseMapper.ENTITY_CLASS);
-        if(param.get(BaseMapper.ID)==null|| StringUtils.isEmpty(param.get(BaseMapper.ID).toString())){
+        if (param.get(BaseMapper.ID) == null || StringUtils.isEmpty(param.get(BaseMapper.ID).toString())) {
             throw new BaseErrorException(StringUtils.join(entityClass.getName(), ",find单个对象时主键不能为空!"));
         }
         SELECT("*");
@@ -37,7 +37,7 @@ public class SearchProvider extends MapperProvider {
             SELECT(selectColumnSql);
         }
         FROM(getTableNameWithAlias(entityClass));
-        createAllWhere(entityClass, map, false);
+        createAllWhere(entityClass, map, false, false);
         return StringUtils.join(sql(), limit);
     }
 
@@ -52,7 +52,7 @@ public class SearchProvider extends MapperProvider {
             SELECT(selectColumnSql);
         }
         FROM(getTableNameWithAlias(entityClass));
-        createAllWhere(entityClass, map, true);
+        createAllWhere(entityClass, map, true, false);
         return StringUtils.join(sql(), limit);
     }
 
@@ -61,7 +61,7 @@ public class SearchProvider extends MapperProvider {
         Class<?> entityClass = (Class) param.get(BaseMapper.ENTITY_CLASS);
         SELECT(createSelectCountColumnSql(param));
         FROM(getTableNameWithAlias(entityClass));
-        createAllWhere(entityClass, (Map<String, Object>) param.get(BaseMapper.DATA), false);
+        createAllWhere(entityClass, (Map<String, Object>) param.get(BaseMapper.DATA), false, true);
         return sql();
     }
 }

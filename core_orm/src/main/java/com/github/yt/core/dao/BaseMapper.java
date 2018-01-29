@@ -4,6 +4,7 @@ import com.github.yt.core.dao.provider.CommonProvider;
 import com.github.yt.core.dao.provider.SearchProvider;
 import org.apache.ibatis.annotations.*;
 
+import javax.validation.Valid;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ public interface BaseMapper<T> {
 
     String ENTITY_CLASS = "entityClass";
     String ENTITY = "entity";
+    String ENTITIES = "entities";
     String ID = "id";
     String DATA = "data";
 
@@ -23,6 +25,15 @@ public interface BaseMapper<T> {
      */
     @InsertProvider(type = CommonProvider.class, method = "save")
     void save(@Param(ENTITY) T entity);
+
+
+    /**
+     * 批量插入
+     *
+     * @param entities 插入结果集
+     */
+    @InsertProvider(type = CommonProvider.class, method = "saveBatch")
+    void saveBatch(@Valid @Param(ENTITIES) List<T> entities);
 
      /**
      * 插入非空字段
@@ -56,6 +67,15 @@ public interface BaseMapper<T> {
      */
     @DeleteProvider(type = CommonProvider.class, method = "delete")
     void delete(@Param(ENTITY_CLASS) Class<?> entityClass, @Param(ID) Serializable id);
+
+    /**
+     * 逻辑删除
+     *
+     * @param entityClass 实体类型
+     * @param id          主键
+     */
+    @DeleteProvider(type = CommonProvider.class, method = "logicDelete")
+    void logicDelete(@Param(ENTITY_CLASS) Class<?> entityClass, @Param(ID) Serializable id);
 
     /**
      * 删除

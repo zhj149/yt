@@ -61,7 +61,6 @@ public class BaseEntity<T extends BaseEntity<T>> implements Serializable {
         return (T) this;
     }
 
-
     public String getFounderId() {
         return founderId;
     }

@@ -6,10 +6,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class QueryHandler {
@@ -23,6 +20,8 @@ public class QueryHandler {
     private Boolean distinct;
     //扩展的whereSql
     private List<String> whereSqls = new ArrayList<>();
+
+    private LinkedHashMap<String, String> orderBy = new LinkedHashMap<String, String>();
     //扩展数据
     private Map<String, Object> expandData = new HashMap<>();
 
@@ -73,6 +72,11 @@ public class QueryHandler {
         if (StringUtils.isNotEmpty(whereSql)) {
             whereSqls.add(whereSql);
         }
+        return this;
+    }
+
+    public QueryHandler addOrderBy(String key, String value) {
+        orderBy.put(key, value);
         return this;
     }
 

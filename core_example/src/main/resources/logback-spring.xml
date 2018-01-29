@@ -2,6 +2,5 @@
 <configuration>
 
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
-    <logger name="com.github.yt.example.orm.dao" level="DEBUG"/>
-
+    <logger name="com.github.yt" level="DEBUG"/>
 </configuration>
